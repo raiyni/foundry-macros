@@ -3,7 +3,7 @@
 
 // CONFIGURATION
 const c = {
-    actorNames: ['Pilbo Puppers'],
+    actorNames: [''],
   };
   // END CONFIGURATION
   

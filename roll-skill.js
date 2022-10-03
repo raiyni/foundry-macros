@@ -6,7 +6,7 @@
 // Leave the actorNames array empty to guess the players
 // Example actorNames: `actorNames: ["Bob", "John"],`
 const c = {
-    actorNames: ['Pilbo Puppers'],
+    actorNames: [''],
     skills: Object.keys(CONFIG.PF1.skills),
   };
   // END CONFIGURATION

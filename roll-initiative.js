@@ -1,7 +1,7 @@
 // name: Roll Initiative
 // type: script
 
-const casterName = 'Pilbo Puppers';
+const casterName = '';
 
 const tokens = canvas.tokens.controlled;
 let caster = tokens.map((o) => o.actor)[0];

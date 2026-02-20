@@ -1,44 +1,62 @@
 // name: Roll Ability
 // type: script
 
-const casterName = '';
+const c = {
+  actorNames: [''],
+  abilities: ['str', 'dex', 'con', 'int', 'wis', 'cha'],
+};
 
 const tokens = canvas.tokens.controlled;
-let caster = tokens.map((o) => o.actor)[0];
-if (!caster && !!casterName) {
-  caster = game.actors.entities.filter((o) => o.name.includes(casterName))[0];
-}
+let actors = tokens.map((o) => o.actor);
+if (!actors.length && c.actorNames.length) actors = game.actors.entities.filter((o) => c.actorNames.includes(o.name));
+if (!actors.length) actors = game.actors.entities.filter((o) => o.isPC && o.testUserPermission(game.user, 'OWNER'));
+actors = actors.filter((o) => o.testUserPermission(game.user, 'OWNER'));
 
-const skillTypes = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'];
-
-const skillData = [];
-skillTypes.forEach((type) => {
-  const skillDatum = caster.system.abilities[`${type.toLowerCase().substring(0, 3)}`];
-  skillDatum.name = type;
-  skillData.push(skillDatum);
-});
-
-const buttons = {};
-skillData.forEach((type) => {
-  buttons[type.name] = {
-    label: type.name,
-    callback: () => {
-      rollCheck(type.name, type.mod);
-    },
+if (!actors.length) ui.notifications.warn('No applicable actor(s) found');
+else {
+  const _roll = async function (type) {
+    let madeSound = false;
+    for (let a = 0; a < actors.length; a++) {
+      let o = actors[a];
+      await o.rollAbilityCheck(type, { event: new MouseEvent({}), skipDialog: true, noSound: madeSound });
+      madeSound = true;
+    }
   };
-});
 
-new Dialog({
-  title: 'Roll Ability!',
-  content: `<p>Choose an ability</p>`,
-  buttons: buttons,
-}).render(true);
+  const buttons = c.abilities.reduce((cur, a) => {
+    let abilityName = a.charAt(0).toUpperCase() + a.slice(1);
+    cur[a] = {
+      label: abilityName,
+      callback: () => _roll(a),
+    };
+    return cur;
+  }, {});
 
-function rollCheck(name, mod) {
-  const roll = RollPF.safeRoll(`1d20 + ${mod}`);
+  const msg = `Choose an ability to roll for the following actor(s): <strong>${actors.map((o) => o.name).join('</strong>, <strong>')}</strong>`;
 
-  roll.toMessage({
-    flavor: `Ability ${name} check`,
-    speaker: { alias: caster.data.name },
-  });
+  const dialog = new Dialog({
+    title: 'Roll Ability',
+    content: `<p>${msg}</p>`,
+    buttons: buttons,
+    options: {
+      width: 'auto',
+      jQuery: true,
+    },
+    render: (html) => {
+      // Add CSS to make buttons wrap
+      const style = document.createElement('style');
+      style.textContent = `
+        .dialog .dialog-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 5px;
+        }
+        .dialog .dialog-buttons button {
+          margin: 2px;
+        }
+      `;
+      html[0].appendChild(style);
+    },
+  }).render(true);
 }

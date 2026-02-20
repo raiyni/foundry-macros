@@ -46,10 +46,30 @@ const c = {
     }, {});
   
     const msg = `Choose a skill to roll for the following actor(s): <strong>${actors.map(o => o.name).join("</strong>, <strong>")}</strong>`;
-  
-    new Dialog({
-      title: "Roll saving throw",
+
+    const dialog = new Dialog({
+      title: "Roll Skill",
       content: `<p>${msg}</p>`,
       buttons: buttons,
+      options: {
+        width: 'auto',
+        jQuery: true,
+      },
+      render: (html) => {
+        // Add CSS to make buttons wrap
+        const style = document.createElement('style');
+        style.textContent = `
+          .dialog .dialog-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+          }
+          .dialog .dialog-buttons button {
+            margin: 2px;
+          }
+        `;
+        html[0].appendChild(style);
+      },
     }).render(true);
   }
